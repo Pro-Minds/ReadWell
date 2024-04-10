@@ -1,39 +1,36 @@
-FROM postgres:latest AS builder
+# first stage: Build react module
+FROM node:latest AS react-builder
 
 WORKDIR /app
-COPY docker-entrypoint-initdb.d/* .
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm install
+COPY frontend/. .
+RUN npm run build
 
-FROM postgres:latest
-
-# to store db files
-VOLUME /var/lib/postgresql/data
-
-# indirect way to check for existing db
-HEALTHCHECK --interval=5s CMD pg_lsclusters | grep main
-# id db !exist, build it
-COPY --from=builder /app/docker-entrypoing-initdb/* .
-
-FROM maven:3.8-jdk-11 AS mvn-builder
+# stage two: Build the maven app
+FROM maven:3.8-openjdk-17 AS maven-builder
 
 WORKDIR /app
-
-COPY maven/pom.xml .
-COPY maven/src/* .
-
+COPY backend/pom.xml .
+COPY backend/src/ /app/src/
 RUN mvn package
 
-FROM nginx:latest AS quiz-db
+# stage 3: creating a postgres database.
+FROM postgres:latest AS postgres-builder
 
-COPY --from=mvn-builder /app/target/*.jar /app.jar
+# set env variable for the db
+ENV POSTGRES_DB=quiz-db
+ENV POSTGRES_DB=prominds
+ENV POSTGRES_PASSWORD=passcode
 
-WORKDIR /app
+# stage 4: creating production image
+FROM nginx:latest
 
-COPY frontend/. .
+# copy the react app from the react-builder stage
+COPY --from=react-builder /app/build /usr/share/nginx/html
+
+# copy the java app from the maven-builder stage
+COPY --from=maven-builder /app/target/app.jar /app.jar
 
 EXPOSE 8080
-
-# run react in the bg
-CMD ["npm", "start"]
-
-# run maven app
 CMD ["java", "-jar", "app.jar"]
