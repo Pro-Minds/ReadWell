@@ -1,29 +1,56 @@
-import React from "react";
+import React, {useState} from "react";
 
 const CreateSubject = () => {
-    const handleClick = () => {
-        handleCreateSubject();
+    // state to hold subject name
+    const [subjectName, setSubjectName] = useState("");
+
+    const handleCreateSubject = async () => {
+        if (!subjectName) {
+            alert("Please enter a subject name!")
+            return; // exit the function if the input is empty.
+        }
+        try {
+            const response = await fetch('/api/subjects', {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: subjectName })
+            });
+            if (response.ok) {
+                alert("Subject created successfully!");
+            }
+            else {
+                throw new Error(`Error creating a new subject: ${response.statusText}`);
+            }
+
+        }
+        catch (error){
+            alert("Error creating subject");
+            console.log('Error creating subject: ', error);
+        }
     };
 
-    return (
-        <button onClick={handleClick}>Create Subject</button>
-    );
-}
+    const handleInputChange = (event) => {
+        // update the subjectName state with input value.
+        setSubjectName(event.target.value);
+    };
 
-const handleCreateSubject() = async () => {
-    try {
-        const response = await fetch('/api/subjects', {
-            method: "POST",
-            body: JSON.stringify({name: 'Your subject name'}),
-        });
-        if (!response.ok) {
-            throw new Error(`Error creating subject: ${response.statusText}`);
-        }
-        alert('Subject created successfully!');
+    const handleButtonClick = () => {
+        handleCreateSubject();
     }
-    catch (error){
-        alert("Error creating subject");
-        console.log('Error creating subject: ', error);
-    }
-}
+
+    return (
+        <div>
+            <input
+                type="text"
+                value={subjectName}
+                onChange={handleInputChange}
+                placeholder="subject name"
+            />
+            <button onClick={handleButtonClick}>Create Subject</button>
+        </div>
+    );
+};
+
 export default CreateSubject;
