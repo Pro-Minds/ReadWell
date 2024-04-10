@@ -20,7 +20,7 @@ FROM postgres:latest AS postgres-builder
 
 # set env variable for the db
 ENV POSTGRES_DB=quiz-db
-ENV POSTGRES_DB=prominds
+ENV POSTGRES_USER=prominds
 ENV POSTGRES_PASSWORD=passcode
 
 # stage 4: creating production image
@@ -30,7 +30,7 @@ FROM nginx:latest
 COPY --from=react-builder /app/build /usr/share/nginx/html
 
 # copy the java app from the maven-builder stage
-COPY --from=maven-builder /app/target/app.jar /app.jar
+COPY --from=maven-builder ./backend/target/backend-0.0.1-SNAPSHOT.jar /app.jar
 
 EXPOSE 8080
 CMD ["java", "-jar", "app.jar"]
