@@ -30,7 +30,8 @@ FROM nginx:latest
 COPY --from=react-builder /app/build /usr/share/nginx/html
 
 # copy the java app from the maven-builder stage
-COPY --from=maven-builder ./backend/target/backend-0.0.1-SNAPSHOT.jar /app.jar
+ARG jar_file=backend/target/backend-0.0.1-SNAPSHOT.jar
+COPY ${jar_file} /app/app.jar
 
 EXPOSE 8080
 CMD ["java", "-jar", "app.jar"]
