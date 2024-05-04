@@ -57,3 +57,12 @@ export const createAnswer = async (topicID, answerText) => {
     });
     return response.ok ? await response.json() : null;
 }
+
+const registerUser = async (data) => {
+    const response = await fetch(`${BASE_URL}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+    return response;
+}
