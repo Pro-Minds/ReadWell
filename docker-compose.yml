@@ -1,0 +1,33 @@
+version: '3'
+services:
+  database:
+    image: postgres:latest
+    container_name: quiz-db
+    environment:
+      POSTGRES_USER: prominds
+      POSTGRES_PASSWORD: passcode
+      POSTGRES_DB: quiz-db
+    ports:
+      - 5432:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - readwell-net
+
+  backend:
+    container_name: readwell-mvn-mod
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - database
+    networks:
+      - readwell-net
+
+volumes:
+  db-data:
+
+networks:
+  readwell-net:
