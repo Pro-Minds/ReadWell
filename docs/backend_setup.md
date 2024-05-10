@@ -12,6 +12,7 @@ This section provides a high-level overview of the backend implementation using 
 4. Connecting the backend to the database.
     - Setup the docker compose file
     - use `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' quiz-db`
+    - or `docker inspect quiz-db | grep IPAddress`
     - to get the IP of the postgres container to bypass DNS resolution setup be Docker within the docker network.
     - This will establish a direct connection to the PostgreSQL container with the use of any dependencies.
     - Note `quiz-db` is the name of the postgresql container.
@@ -19,5 +20,30 @@ This section provides a high-level overview of the backend implementation using 
    
 ## Run the application
 ```dockerfile
+docker compose up --build
+```
+```dockerfile
 docker compose up -d
 ```
+
+## Troubleshooting
+- Check if the containers are communicating with each other
+   ```dockerfile
+   docker exec readwell-react-mod ping backend
+   ```
+- Inspect the docker compose network
+   ```dockerfile
+   docker network inspect readwell_readwell-net
+   ```
+- Inspect any of the containers
+   ```dockerfile
+   docker inspect <container-name>
+   ```
+- See database list
+   ```dockerfile
+   docker exec <dbContainer-nam> psql -U <dbUser-name> -c '\l'
+   ```
+- Check if database was created
+   ```dockerfile
+   docker exec <dbContainer-nam> psql -U <dbUser-name> -c '\l' | grep <db-name>
+   ```
